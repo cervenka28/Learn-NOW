@@ -1,0 +1,650 @@
+```html
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn Now</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+font-family:Arial,sans-serif;
+background:#080d18;color:white;min-height:100vh
+}
+header{
+display:flex;justify-content:space-between;align-items:center;
+padding:20px 7%;background:#101a2c;
+border-bottom:1px solid #263750;flex-wrap:wrap;gap:15px
+}
+.logo{font-size:28px;font-weight:bold;color:#55aaff}
+.logo span{color:white}
+select,input{
+padding:12px;border-radius:9px;border:1px solid #334866;
+background:#142239;color:white;outline:none
+}
+.hero{text-align:center;padding:65px 20px 45px}
+.hero h1{font-size:clamp(38px,7vw,65px);margin-bottom:15px}
+.hero h1 span{color:#55aaff}
+.hero p{color:#aabbd2;font-size:18px}
+.container{max-width:1100px;margin:auto;padding:20px}
+.panel{
+background:#111d30;border:1px solid #253953;
+border-radius:16px;padding:25px;margin-bottom:25px
+}
+.panel h2{margin-bottom:17px}
+.grid{
+display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+gap:15px
+}
+.card{
+background:#15243a;border:1px solid #2c4260;
+border-radius:13px;padding:22px;cursor:pointer;transition:.2s
+}
+.card:hover{
+transform:translateY(-4px);border-color:#55aaff;background:#1b304d
+}
+.icon{font-size:35px;margin-bottom:12px}
+.card h3{margin-bottom:8px}
+.card p{color:#aabbd2;font-size:14px;line-height:1.5}
+button{
+border:none;border-radius:9px;padding:12px 18px;
+background:#2687ed;color:white;cursor:pointer;font-weight:bold;margin:5px 3px
+}
+button:hover{background:#4ca2ff}
+.secondary{background:#263b58}
+.hidden{display:none!important}
+.topic{
+padding:16px;background:#15243a;border-radius:10px;
+margin:10px 0;cursor:pointer;border:1px solid #2c4260
+}
+.topic:hover{border-color:#55aaff}
+.lesson{line-height:1.8;color:#dce8f8}
+.lesson h2{color:#55aaff;margin-bottom:15px}
+.lesson h3{margin:22px 0 8px;color:white}
+.example{
+background:#1a2c46;border-left:4px solid #55aaff;
+padding:16px;margin:15px 0;border-radius:8px
+}
+.quiz{background:#172942;padding:20px;border-radius:12px;margin-top:20px}
+.quiz button{display:block;width:100%;text-align:left;margin:8px 0}
+.result{margin-top:12px;font-weight:bold}
+.back{margin-bottom:15px}
+#search{width:100%;margin-bottom:18px}
+footer{text-align:center;padding:35px 10px;color:#8296b2}
+.small{color:#aabbd2;font-size:14px;margin-bottom:15px}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">LEARN <span>NOW</span></div>
+
+<select id="language" onchange="changeLanguage()">
+<option value="sk">🇸🇰 Slovenčina</option>
+<option value="cz">🇨🇿 Čeština</option>
+<option value="en">🇬🇧 English</option>
+<option value="de">🇩🇪 Deutsch</option>
+<option value="fr">🇫🇷 Français</option>
+<option value="es">🇪🇸 Español</option>
+<option value="pl">🇵🇱 Polski</option>
+<option value="sl">🇸🇮 Slovenščina</option>
+</select>
+</header>
+
+<section class="hero">
+<h1 id="heroTitle">Uč sa s <span>Learn Now</span></h1>
+<p id="heroDescription"></p>
+</section>
+
+<main class="container">
+
+<section id="gradeSection" class="panel">
+<h2 id="gradeTitle"></h2>
+<p class="small" id="gradeDescription"></p>
+<div class="grid" id="gradeGrid"></div>
+</section>
+
+<section id="subjectSection" class="panel hidden">
+<button class="secondary back" onclick="goBack()">← <span id="backText"></span></button>
+<h2 id="subjectTitle"></h2>
+<div class="grid" id="subjectGrid"></div>
+</section>
+
+<section id="topicSection" class="panel hidden">
+<button class="secondary back" onclick="showSubjects()">← <span id="subjectBack"></span></button>
+<h2 id="topicTitle"></h2>
+<input id="search" placeholder="" oninput="searchTopics()">
+<div id="topicList"></div>
+</section>
+
+<section id="lessonSection" class="panel hidden">
+<button class="secondary back" onclick="showTopics()">← <span id="topicBack"></span></button>
+<div id="lessonContent" class="lesson"></div>
+</section>
+
+</main>
+
+<footer>
+LEARN NOW © 2026<br>
+Learn today. Know tomorrow.
+</footer>
+
+<script>
+
+/* PREKLADY ROZHRANIA */
+
+const T = {
+
+sk:{
+hero:"Uč sa s",description:"Objavuj nové vedomosti. Uč sa vlastným tempom.",
+grade:"🎓 Vyber si ročník",gradeDesc:"Vyber si školský ročník.",
+subjects:"📚 Vyber si predmet",topics:"📖 Vyber si učivo",
+search:"🔎 Vyhľadaj učivo...",back:"Späť",subjectBack:"Predmety",topicBack:"Učivo",
+grades:["ročník ZŠ","ročník SŠ"],
+subjects:["Matematika","Informatika","Slovenčina","Angličtina","Čeština","Prírodné vedy"],
+descriptions:["Počítanie, čísla a geometria","Počítače a programovanie","Gramatika a pravopis","Slovíčka a gramatika","Český jazyk","Veda, príroda a fyzika"]
+},
+
+cz:{
+hero:"Uč se s",description:"Objevuj nové vědomosti. Uč se vlastním tempem.",
+grade:"🎓 Vyber si ročník",gradeDesc:"Vyber si školní ročník.",
+subjects:"📚 Vyber si předmět",topics:"📖 Vyber si učivo",
+search:"🔎 Vyhledej učivo...",back:"Zpět",subjectBack:"Předměty",topicBack:"Učivo",
+grades:["ročník ZŠ","ročník SŠ"],
+subjects:["Matematika","Informatika","Slovenština","Angličtina","Čeština","Přírodní vědy"],
+descriptions:["Počítání, čísla a geometrie","Počítače a programování","Gramatika a pravopis","Slovíčka a gramatika","Český jazyk","Věda, příroda a fyzika"]
+},
+
+en:{
+hero:"Learn with",description:"Discover new knowledge. Learn at your own pace.",
+grade:"🎓 Choose your grade",gradeDesc:"Choose your school year.",
+subjects:"📚 Choose a subject",topics:"📖 Choose a lesson",
+search:"🔎 Search lessons...",back:"Back",subjectBack:"Subjects",topicBack:"Lessons",
+grades:["grade of primary school","year of secondary school"],
+subjects:["Mathematics","Computer Science","Slovak Language","English","Czech","Science"],
+descriptions:["Numbers, calculations and geometry","Computers and programming","Grammar and spelling","Vocabulary and grammar","Czech language","Science, nature and physics"]
+},
+
+de:{
+hero:"Lerne mit",description:"Entdecke neues Wissen. Lerne in deinem eigenen Tempo.",
+grade:"🎓 Wähle deine Klasse",gradeDesc:"Wähle deine Schulstufe.",
+subjects:"📚 Wähle ein Fach",topics:"📖 Wähle eine Lektion",
+search:"🔎 Lektionen suchen...",back:"Zurück",subjectBack:"Fächer",topicBack:"Lektionen",
+grades:["Klasse der Grundschule","Jahr der weiterführenden Schule"],
+subjects:["Mathematik","Informatik","Slowakische Sprache","Englisch","Tschechisch","Naturwissenschaften"],
+descriptions:["Zahlen, Rechnen und Geometrie","Computer und Programmierung","Grammatik und Rechtschreibung","Wortschatz und Grammatik","Tschechische Sprache","Wissenschaft und Natur"]
+},
+
+fr:{
+hero:"Apprends avec",description:"Découvre de nouvelles connaissances. Apprends à ton rythme.",
+grade:"🎓 Choisis ta classe",gradeDesc:"Choisis ton niveau scolaire.",
+subjects:"📚 Choisis une matière",topics:"📖 Choisis une leçon",
+search:"🔎 Rechercher une leçon...",back:"Retour",subjectBack:"Matières",topicBack:"Leçons",
+grades:["année de l'école primaire","année du lycée"],
+subjects:["Mathématiques","Informatique","Langue slovaque","Anglais","Tchèque","Sciences"],
+descriptions:["Nombres, calculs et géométrie","Ordinateurs et programmation","Grammaire et orthographe","Vocabulaire et grammaire","Langue tchèque","Sciences et nature"]
+},
+
+es:{
+hero:"Aprende con",description:"Descubre nuevos conocimientos. Aprende a tu propio ritmo.",
+grade:"🎓 Elige tu curso",gradeDesc:"Elige tu nivel escolar.",
+subjects:"📚 Elige una asignatura",topics:"📖 Elige una lección",
+search:"🔎 Buscar lecciones...",back:"Volver",subjectBack:"Asignaturas",topicBack:"Lecciones",
+grades:["curso de primaria","curso de secundaria"],
+subjects:["Matemáticas","Informática","Lengua eslovaca","Inglés","Checo","Ciencias"],
+descriptions:["Números, cálculos y geometría","Ordenadores y programación","Gramática y ortografía","Vocabulario y gramática","Lengua checa","Ciencia y naturaleza"]
+},
+
+pl:{
+hero:"Ucz się z",description:"Odkrywaj nową wiedzę. Ucz się we własnym tempie.",
+grade:"🎓 Wybierz klasę",gradeDesc:"Wybierz swój poziom nauki.",
+subjects:"📚 Wybierz przedmiot",topics:"📖 Wybierz lekcję",
+search:"🔎 Szukaj lekcji...",back:"Wstecz",subjectBack:"Przedmioty",topicBack:"Lekcje",
+grades:["klasa szkoły podstawowej","klasa szkoły średniej"],
+subjects:["Matematyka","Informatyka","Język słowacki","Angielski","Czeski","Nauki przyrodnicze"],
+descriptions:["Liczby, obliczenia i geometria","Komputery i programowanie","Gramatyka i ortografia","Słownictwo i gramatyka","Język czeski","Nauka i przyroda"]
+},
+
+sl:{
+hero:"Uči se z",description:"Odkrij novo znanje. Uči se v svojem tempu.",
+grade:"🎓 Izberi razred",gradeDesc:"Izberi svoj šolski razred.",
+subjects:"📚 Izberi predmet",topics:"📖 Izberi učno snov",
+search:"🔎 Išči učno snov...",back:"Nazaj",subjectBack:"Predmeti",topicBack:"Učna snov",
+grades:["razred osnovne šole","letnik srednje šole"],
+subjects:["Matematika","Računalništvo","Slovaščina","Angleščina","Češčina","Naravoslovje"],
+descriptions:["Števila, računanje in geometrija","Računalniki in programiranje","Slovnica in pravopis","Besedišče in slovnica","Češki jezik","Znanost in narava"]
+}
+
+};
+
+/* UČIVO V JEDNOTLIVÝCH JAZYKOCH */
+
+const lessons = {
+
+sk:{
+math:[
+["Sčítanie ➕","Sčítanie spája dve alebo viac čísel.","5 + 3 = 8","Koľko je 12 + 8?",["18","20","22"],1],
+["Odčítanie ➖","Odčítanie znamená odobrať jedno číslo od druhého.","10 - 4 = 6","Koľko je 15 - 6?",["9","8","10"],0],
+["Násobenie ✖️","Násobenie je opakované sčítanie rovnakého čísla.","4 × 3 = 4 + 4 + 4 = 12","Koľko je 7 × 8?",["54","56","64"],1],
+["Delenie ➗","Delením rozdeľujeme číslo na rovnaké časti.","20 ÷ 4 = 5","Koľko je 36 ÷ 6?",["5","6","7"],1],
+["Zlomky","Zlomok vyjadruje časť celku. Číslo hore je čitateľ a číslo dole menovateľ.","1/2 znamená jednu polovicu.","Čo znamená 1/2?",["Jedna polovica","Jedna tretina","Dve polovice"],0],
+["Desatinné čísla","Desatinné čísla používajú desatinnú čiarku.","0,5 + 0,5 = 1","Koľko je 0,5 + 0,5?",["0,5","1","2"],1],
+["Percentá","Percento znamená jednu stotinu celku.","50 % zo 100 = 50","Koľko je 25 % zo 100?",["10","25","50"],1],
+["Rovnice","V rovnici hľadáme neznámu hodnotu.","x + 3 = 8, preto x = 5.","Ak x + 4 = 10, koľko je x?",["5","6","7"],1],
+["Geometria a rysovanie 📐","Geometria skúma útvary, ich vlastnosti a rozmery. Pravý uhol má 90°. Trojuholník má tri strany. Kružnica má stred a polomer.","Kolmica zviera s priamkou pravý uhol 90°. Rovnobežky sa nikdy nepretínajú.","Koľko stupňov má pravý uhol?",["45°","90°","180°"],1],
+["Obvod a obsah","Obvod je dĺžka okraja útvaru. Obsah vyjadruje veľkosť plochy.","Štvorec so stranou 4 cm: obvod = 16 cm, obsah = 16 cm².","Aký je obvod štvorca so stranou 3 cm?",["9 cm","12 cm","6 cm"],1]
+],
+informatics:[
+["Hardvér a softvér","Hardvér sú fyzické časti počítača. Softvér sú programy.","Hardvér: procesor, monitor, klávesnica. Softvér: Windows, Minecraft.","Čo je hardvér?",["Fyzické časti počítača","Program","Internet"],0],
+["Procesor","Procesor vykonáva inštrukcie a spracováva údaje.","CPU znamená Central Processing Unit.","Čo robí procesor?",["Vykonáva inštrukcie","Zobrazuje obraz","Vydáva zvuk"],0],
+["RAM pamäť","RAM je operačná pamäť používaná počas práce počítača.","Po vypnutí počítača sa jej obsah vymaže.","Čo sa stane s obsahom RAM po vypnutí?",["Zostane navždy","Vymaže sa","Premení sa na disk"],1],
+["Internet a bezpečnosť","Na internete chráň svoje súkromie. Nezdieľaj heslá a osobné údaje.","Používaj silné heslá a dávaj pozor na podozrivé odkazy.","Máš niekomu poslať svoje heslo?",["Áno, každému","Nie","Neznámemu človeku"],1],
+["Algoritmy","Algoritmus je presný postup krokov na vyriešenie úlohy.","Príklad: príprava čaju má niekoľko krokov v správnom poradí.","Čo je algoritmus?",["Postup krokov","Počítačová myš","Monitor"],0],
+["HTML a CSS","HTML vytvára štruktúru webovej stránky. CSS určuje jej vzhľad.","HTML = obsah. CSS = farby a rozloženie.","Na čo slúži CSS?",["Na vzhľad stránky","Na napájanie PC","Na ukladanie súborov"],0],
+["Programovanie","Programovanie je vytváranie pokynov, ktorým počítač rozumie.","JavaScript: let meno = 'Learn Now';","Čo je programovanie?",["Vytváranie pokynov pre počítač","Čistenie monitora","Sťahovanie hier"],0]
+],
+slovak:[
+["Podstatné mená","Podstatné mená pomenúvajú osoby, zvieratá, veci a vlastnosti.","chlapec, pes, dom, radosť","Ktoré slovo je podstatné meno?",["pekný","pes","bežať"],1],
+["Prídavné mená","Prídavné mená vyjadrujú vlastnosti podstatných mien.","pekný dom, malý pes, modré auto","Ktoré slovo je prídavné meno?",["stôl","modrý","beží"],1],
+["Slovesá","Slovesá vyjadrujú činnosť alebo stav.","bežať, písať, spať, rozmýšľať","Ktoré slovo je sloveso?",["strom","rýchly","skákať"],2],
+["Vybrané slová","Vybrané slová sú slová, v ktorých po obojakej spoluhláske píšeme y alebo ý.","byť, bývať, myš, ryba, syn","Ako správne napíšeme slovo?",["miš","myš","meš"],1],
+["Pravopis","Pravopis určuje pravidlá správneho písania slov a viet.","Na začiatku vety píšeme veľké písmeno.","Čím sa končí oznamovacia veta?",["Bodkou","Čiarkou","Dvojbodkou"],0]
+],
+english:[
+["Basic vocabulary","Learn common English words.","Dog = pes. Cat = mačka. House = dom. Water = voda.","What does DOG mean?",["Mačka","Pes","Dom"],1],
+["Verb TO BE","The verb TO BE means being. It changes depending on the subject.","I am. You are. He is. She is. We are.","How do you translate I am?",["Ja som","Ty si","On je"],0],
+["Present Simple","Present Simple is used for habits and general facts.","I play. She plays. He plays.","Which sentence is correct?",["She play.","She plays."],1]
+],
+czech:[
+["Česká slovíčka","Česká slovíčka majú často podobný význam ako slovenské slová.","Dům = dom. Pes = pes. Kočka = mačka.","Čo znamená DŮM?",["Dom","Pes","Strom"],0],
+["Český pravopis","Čeština používa písmená s diakritikou, napríklad č, š, ř, ž a ě.","Příklady: škola, řeka, člověk.","Ktoré písmeno je typické pre češtinu?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Slnečná sústava","Slnečná sústava obsahuje Slnko a telesá, ktoré obiehajú okolo neho.","Merkúr, Venuša, Zem, Mars, Jupiter, Saturn, Urán, Neptún.","Ktorá planéta je najbližšie k Slnku?",["Zem","Mars","Merkúr"],2],
+["Ľudské telo","Ľudské telo tvorí množstvo orgánov a orgánových sústav.","Srdce pumpuje krv. Pľúca pomáhajú pri dýchaní. Mozog riadi činnosť tela.","Ktorý orgán pumpuje krv?",["Srdce","Žalúdok","Pľúca"],0],
+["Fyzika: sila","Sila môže meniť pohyb alebo tvar predmetov.","Silu meriame v newtonoch (N).","V akej jednotke meriame silu?",["Meter","Newton","Liter"],1]
+]
+},
+
+/* ČEŠTINA */
+
+cz:{
+math:[
+["Sčítání ➕","Sčítání spojuje dvě nebo více čísel.","5 + 3 = 8","Kolik je 12 + 8?",["18","20","22"],1],
+["Odčítání ➖","Odčítání znamená odebrat jedno číslo od druhého.","10 - 4 = 6","Kolik je 15 - 6?",["9","8","10"],0],
+["Násobení ✖️","Násobení je opakované sčítání stejného čísla.","4 × 3 = 12","Kolik je 7 × 8?",["54","56","64"],1],
+["Dělení ➗","Dělením rozdělujeme číslo na stejné části.","20 ÷ 4 = 5","Kolik je 36 ÷ 6?",["5","6","7"],1],
+["Zlomky","Zlomek vyjadřuje část celku.","1/2 znamená jednu polovinu.","Co znamená 1/2?",["Jedna polovina","Jedna třetina","Dvě poloviny"],0],
+["Desetinná čísla","Desetinná čísla používají desetinnou čárku.","0,5 + 0,5 = 1","Kolik je 0,5 + 0,5?",["0,5","1","2"],1],
+["Procenta","Procento znamená jednu setinu celku.","50 % ze 100 = 50","Kolik je 25 % ze 100?",["10","25","50"],1],
+["Rovnice","V rovnici hledáme neznámou hodnotu.","x + 3 = 8, proto x = 5.","Pokud x + 4 = 10, kolik je x?",["5","6","7"],1],
+["Geometrie a rýsování","Geometrie zkoumá útvary a jejich vlastnosti. Pravý úhel má 90°.","Kolmice svírá s přímkou pravý úhel.","Kolik stupňů má pravý úhel?",["45°","90°","180°"],1]
+],
+informatics:[
+["Hardware a software","Hardware jsou fyzické části počítače. Software jsou programy.","Hardware: procesor, monitor. Software: Windows, Minecraft.","Co je hardware?",["Fyzické části počítače","Program","Internet"],0],
+["Algoritmy","Algoritmus je přesný postup kroků k vyřešení úlohy.","Příprava čaje má několik kroků.","Co je algoritmus?",["Postup kroků","Monitor","Klávesnice"],0],
+["HTML a CSS","HTML vytváří strukturu webové stránky. CSS určuje její vzhled.","HTML = obsah. CSS = vzhled.","K čemu slouží CSS?",["Vzhled stránky","Napájení PC","Ukládání souborů"],0]
+],
+slovak:[
+["Slovenská slovesa","Slovesa vyjadřují činnost nebo stav.","bežať, písať, spať","Které slovo je sloveso?",["strom","rýchly","skákať"],2],
+["Slovenská podstatná jména","Podstatná jména pojmenovávají osoby, zvířata a věci.","chlapec, pes, dom","Které slovo je podstatné jméno?",["pekný","pes","bežať"],1]
+],
+english:[
+["English vocabulary","Learn common English words.","Dog = pes. Cat = mačka. House = dom.","What does DOG mean?",["Cat","Dog","House"],1],
+["Verb TO BE","The verb TO BE means being.","I am. You are. He is.","How do you translate I am?",["Já jsem","Ty jsi","On je"],0]
+],
+czech:[
+["Podstatná jména","Podstatná jména pojmenovávají osoby, zvířata a věci.","chlapec, pes, dům","Které slovo je podstatné jméno?",["krásný","pes","běžet"],1],
+["Slovesa","Slovesa vyjadřují činnost nebo stav.","běžet, psát, spát","Které slovo je sloveso?",["strom","rychlý","skákat"],2]
+],
+science:[
+["Sluneční soustava","Sluneční soustava obsahuje Slunce a tělesa, která kolem něj obíhají.","Merkur, Venuše, Země, Mars, Jupiter, Saturn, Uran, Neptun.","Která planeta je nejblíže Slunci?",["Země","Mars","Merkur"],2],
+["Lidské tělo","Lidské tělo tvoří mnoho orgánů.","Srdce pumpuje krev. Plíce pomáhají při dýchání.","Který orgán pumpuje krev?",["Srdce","Žaludek","Plíce"],0]
+]
+},
+
+/* ENGLISH */
+
+en:{
+math:[
+["Addition ➕","Addition combines two or more numbers.","5 + 3 = 8","What is 12 + 8?",["18","20","22"],1],
+["Subtraction ➖","Subtraction means taking one number away from another.","10 - 4 = 6","What is 15 - 6?",["9","8","10"],0],
+["Multiplication ✖️","Multiplication is repeated addition of the same number.","4 × 3 = 12","What is 7 × 8?",["54","56","64"],1],
+["Division ➗","Division splits a number into equal parts.","20 ÷ 4 = 5","What is 36 ÷ 6?",["5","6","7"],1],
+["Fractions","A fraction represents a part of a whole.","1/2 means one half.","What does 1/2 mean?",["One half","One third","Two halves"],0],
+["Decimals","Decimal numbers use a decimal point.","0.5 + 0.5 = 1","What is 0.5 + 0.5?",["0.5","1","2"],1],
+["Percentages","A percent means one hundredth of a whole.","50% of 100 = 50","What is 25% of 100?",["10","25","50"],1],
+["Equations","An equation is a mathematical statement with an unknown value.","x + 3 = 8, so x = 5.","If x + 4 = 10, what is x?",["5","6","7"],1],
+["Geometry and constructions","Geometry studies shapes and their properties. A right angle is 90 degrees.","Perpendicular lines meet at a 90-degree angle. Parallel lines never meet.","How many degrees are in a right angle?",["45°","90°","180°"],1]
+],
+informatics:[
+["Hardware and software","Hardware means the physical parts of a computer. Software means programs.","Hardware: CPU, monitor, keyboard. Software: Windows, Minecraft.","What is hardware?",["Physical computer parts","A program","The internet"],0],
+["Processor","A processor executes instructions and processes data.","CPU means Central Processing Unit.","What does a processor do?",["Executes instructions","Displays images","Produces sound"],0],
+["RAM memory","RAM is temporary working memory used by a computer.","Its contents are cleared when the computer is turned off.","What happens to RAM data when power is off?",["It stays forever","It is cleared","It becomes a disk"],1],
+["Internet safety","Protect your privacy online. Never share passwords or personal information.","Use strong passwords and watch out for suspicious links.","Should you share your password with strangers?",["Yes","No","Always"],1],
+["Algorithms","An algorithm is a clear sequence of steps used to solve a problem.","Making tea can be described as a sequence of steps.","What is an algorithm?",["A sequence of steps","A monitor","A keyboard"],0],
+["HTML and CSS","HTML creates the structure of a web page. CSS controls its appearance.","HTML = content. CSS = design.","What is CSS used for?",["Page appearance","Computer power","File storage"],0],
+["Programming","Programming means writing instructions that a computer can understand.","JavaScript: let name = 'Learn Now';","What is programming?",["Writing instructions for computers","Cleaning a monitor","Downloading games"],0]
+],
+slovak:[
+["Slovak verbs","Slovak verbs express an action or a state.","bežať = to run, písať = to write, spať = to sleep.","Which word is a Slovak verb?",["strom","rýchly","skákať"],2],
+["Slovak nouns","Slovak nouns name people, animals, things and ideas.","chlapec = boy, pes = dog, dom = house.","Which word is a Slovak noun?",["pekný","pes","bežať"],1],
+["Slovak adjectives","Adjectives describe nouns.","pekný dom = beautiful house.","Which word is an adjective?",["dom","modrý","beží"],1]
+],
+english:[
+["English nouns","Nouns name people, animals, places and things.","dog, cat, house, school","Which word is a noun?",["run","beautiful","dog"],2],
+["English verbs","Verbs describe actions or states.","run, write, sleep, think","Which word is a verb?",["table","quick","jump"],2],
+["Present Simple","Present Simple describes habits and general facts.","I play. She plays. He plays.","Which sentence is correct?",["She play.","She plays."],1]
+],
+czech:[
+["Czech vocabulary","Learn common Czech words.","dům = house, pes = dog, kočka = cat.","What does DŮM mean?",["House","Dog","Tree"],0],
+["Czech grammar","Czech uses special letters such as ř, č, š and ž.","Examples: škola, řeka, člověk.","Which letter is used in Czech?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Solar system","The Solar System contains the Sun and objects that orbit it.","Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.","Which planet is closest to the Sun?",["Earth","Mars","Mercury"],2],
+["Human body","The human body contains many organs.","The heart pumps blood. The lungs help us breathe. The brain controls the body.","Which organ pumps blood?",["Heart","Stomach","Lungs"],0],
+["Physics: force","A force can change the movement or shape of an object.","Force is measured in newtons (N).","What unit measures force?",["Metre","Newton","Litre"],1]
+]
+},
+
+/* OSTATNÉ JAZYKY */
+
+de:{
+math:[
+["Addition ➕","Addition verbindet zwei oder mehr Zahlen.","5 + 3 = 8","Was ist 12 + 8?",["18","20","22"],1],
+["Subtraktion ➖","Bei der Subtraktion wird eine Zahl von einer anderen abgezogen.","10 - 4 = 6","Was ist 15 - 6?",["9","8","10"],0],
+["Multiplikation ✖️","Multiplikation ist wiederholte Addition.","4 × 3 = 12","Was ist 7 × 8?",["54","56","64"],1],
+["Brüche","Ein Bruch beschreibt einen Teil eines Ganzen.","1/2 bedeutet eine Hälfte.","Was bedeutet 1/2?",["Eine Hälfte","Ein Drittel","Zwei Hälften"],0],
+["Geometrie","Geometrie untersucht Formen und ihre Eigenschaften.","Ein rechter Winkel hat 90 Grad.","Wie viele Grad hat ein rechter Winkel?",["45°","90°","180°"],1]
+],
+informatics:[
+["Hardware und Software","Hardware sind physische Computerteile. Software sind Programme.","Hardware: Prozessor, Bildschirm. Software: Windows.","Was ist Hardware?",["Physische Computerteile","Ein Programm","Das Internet"],0],
+["Algorithmen","Ein Algorithmus ist eine genaue Folge von Schritten.","Ein Rezept ist ein Beispiel für einen Ablauf.","Was ist ein Algorithmus?",["Eine Folge von Schritten","Ein Bildschirm","Eine Tastatur"],0]
+],
+slovak:[
+["Slowakische Verben","Verben beschreiben Handlungen oder Zustände.","bežať = laufen, písať = schreiben.","Welches Wort ist ein Verb?",["strom","rýchly","skákať"],2],
+["Slowakische Substantive","Substantive benennen Menschen, Tiere und Dinge.","pes = Hund, dom = Haus.","Welches Wort ist ein Substantiv?",["pekný","pes","bežať"],1]
+],
+english:[
+["Englische Wörter","Lerne häufige englische Wörter.","dog = Hund, cat = Katze, house = Haus.","Was bedeutet DOG?",["Katze","Hund","Haus"],1],
+["Verb TO BE","TO BE bedeutet sein.","I am. You are. He is.","Was bedeutet I am?",["Ich bin","Du bist","Er ist"],0]
+],
+czech:[
+["Tschechische Wörter","Lerne häufige tschechische Wörter.","dům = Haus, pes = Hund.","Was bedeutet DŮM?",["Haus","Hund","Baum"],0],
+["Tschechische Grammatik","Tschechisch verwendet Buchstaben wie ř, č, š und ž.","Beispiele: škola, řeka.","Welcher Buchstabe ist typisch?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Sonnensystem","Das Sonnensystem enthält die Sonne und ihre Planeten.","Merkur, Venus, Erde, Mars, Jupiter, Saturn, Uranus, Neptun.","Welcher Planet ist der Sonne am nächsten?",["Erde","Mars","Merkur"],2],
+["Der menschliche Körper","Der Körper besteht aus vielen Organen.","Das Herz pumpt Blut. Die Lunge hilft beim Atmen.","Welches Organ pumpt Blut?",["Herz","Magen","Lunge"],0]
+]
+},
+
+fr:{
+math:[
+["Addition ➕","L'addition rassemble deux nombres ou plus.","5 + 3 = 8","Combien font 12 + 8 ?",["18","20","22"],1],
+["Soustraction ➖","La soustraction consiste à retirer un nombre d'un autre.","10 - 4 = 6","Combien font 15 - 6 ?",["9","8","10"],0],
+["Multiplication ✖️","La multiplication est une addition répétée.","4 × 3 = 12","Combien font 7 × 8 ?",["54","56","64"],1],
+["Fractions","Une fraction représente une partie d'un tout.","1/2 signifie une moitié.","Que signifie 1/2 ?",["Une moitié","Un tiers","Deux moitiés"],0],
+["Géométrie","La géométrie étudie les formes et leurs propriétés.","Un angle droit mesure 90 degrés.","Combien de degrés mesure un angle droit ?",["45°","90°","180°"],1]
+],
+informatics:[
+["Matériel et logiciel","Le matériel désigne les parties physiques. Le logiciel désigne les programmes.","Matériel : processeur, écran. Logiciel : Windows.","Qu'est-ce que le matériel ?",["Les parties physiques","Un programme","Internet"],0],
+["Algorithmes","Un algorithme est une suite précise d'étapes.","Une recette est un exemple de procédure.","Qu'est-ce qu'un algorithme ?",["Une suite d'étapes","Un écran","Un clavier"],0]
+],
+slovak:[
+["Verbes slovaques","Les verbes expriment une action ou un état.","bežať = courir, písať = écrire.","Quel mot est un verbe slovaque ?",["strom","rýchly","skákať"],2],
+["Noms slovaques","Les noms désignent des personnes, des animaux et des choses.","pes = chien, dom = maison.","Quel mot est un nom ?",["pekný","pes","bežať"],1]
+],
+english:[
+["Vocabulaire anglais","Apprends des mots anglais courants.","dog = chien, cat = chat, house = maison.","Que signifie DOG ?",["Chat","Chien","Maison"],1],
+["Verbe TO BE","Le verbe TO BE signifie être.","I am. You are. He is.","Que signifie I am ?",["Je suis","Tu es","Il est"],0]
+],
+czech:[
+["Mots tchèques","Apprends des mots tchèques courants.","dům = maison, pes = chien.","Que signifie DŮM ?",["Maison","Chien","Arbre"],0],
+["Grammaire tchèque","Le tchèque utilise les lettres ř, č, š et ž.","Exemples : škola, řeka.","Quelle lettre est utilisée en tchèque ?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Système solaire","Le système solaire contient le Soleil et les objets qui tournent autour de lui.","Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus, Neptune.","Quelle planète est la plus proche du Soleil ?",["Terre","Mars","Mercure"],2],
+["Corps humain","Le corps humain contient de nombreux organes.","Le cœur pompe le sang. Les poumons aident à respirer.","Quel organe pompe le sang ?",["Cœur","Estomac","Poumons"],0]
+]
+},
+
+es:{
+math:[
+["Suma ➕","La suma combina dos o más números.","5 + 3 = 8","¿Cuánto es 12 + 8?",["18","20","22"],1],
+["Resta ➖","La resta consiste en quitar un número de otro.","10 - 4 = 6","¿Cuánto es 15 - 6?",["9","8","10"],0],
+["Multiplicación ✖️","La multiplicación es una suma repetida.","4 × 3 = 12","¿Cuánto es 7 × 8?",["54","56","64"],1],
+["Fracciones","Una fracción representa una parte de un todo.","1/2 significa una mitad.","¿Qué significa 1/2?",["Una mitad","Un tercio","Dos mitades"],0],
+["Geometría","La geometría estudia las formas y sus propiedades.","Un ángulo recto tiene 90 grados.","¿Cuántos grados tiene un ángulo recto?",["45°","90°","180°"],1]
+],
+informatics:[
+["Hardware y software","El hardware son las partes físicas del ordenador. El software son los programas.","Hardware: procesador, pantalla. Software: Windows.","¿Qué es el hardware?",["Partes físicas","Un programa","Internet"],0],
+["Algoritmos","Un algoritmo es una secuencia precisa de pasos.","Una receta es un ejemplo de procedimiento.","¿Qué es un algoritmo?",["Una secuencia de pasos","Una pantalla","Un teclado"],0]
+],
+slovak:[
+["Verbos eslovacos","Los verbos expresan acciones o estados.","bežať = correr, písať = escribir.","¿Cuál es un verbo eslovaco?",["strom","rýchly","skákať"],2],
+["Sustantivos eslovacos","Los sustantivos nombran personas, animales y cosas.","pes = perro, dom = casa.","¿Cuál es un sustantivo?",["pekný","pes","bežať"],1]
+],
+english:[
+["Vocabulario inglés","Aprende palabras comunes en inglés.","dog = perro, cat = gato, house = casa.","¿Qué significa DOG?",["Gato","Perro","Casa"],1],
+["Verbo TO BE","El verbo TO BE significa ser o estar.","I am. You are. He is.","¿Qué significa I am?",["Yo soy","Tú eres","Él es"],0]
+],
+czech:[
+["Palabras checas","Aprende palabras comunes en checo.","dům = casa, pes = perro.","¿Qué significa DŮM?",["Casa","Perro","Árbol"],0],
+["Gramática checa","El checo utiliza las letras ř, č, š y ž.","Ejemplos: škola, řeka.","¿Qué letra se usa en checo?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Sistema solar","El sistema solar contiene el Sol y los cuerpos que orbitan alrededor de él.","Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno.","¿Qué planeta está más cerca del Sol?",["Tierra","Marte","Mercurio"],2],
+["Cuerpo humano","El cuerpo humano tiene muchos órganos.","El corazón bombea sangre. Los pulmones ayudan a respirar.","¿Qué órgano bombea sangre?",["Corazón","Estómago","Pulmones"],0]
+]
+},
+
+pl:{
+math:[
+["Dodawanie ➕","Dodawanie łączy dwie lub więcej liczb.","5 + 3 = 8","Ile wynosi 12 + 8?",["18","20","22"],1],
+["Odejmowanie ➖","Odejmowanie polega na odejmowaniu jednej liczby od drugiej.","10 - 4 = 6","Ile wynosi 15 - 6?",["9","8","10"],0],
+["Mnożenie ✖️","Mnożenie to wielokrotne dodawanie tej samej liczby.","4 × 3 = 12","Ile wynosi 7 × 8?",["54","56","64"],1],
+["Ułamki","Ułamek przedstawia część całości.","1/2 oznacza jedną połowę.","Co oznacza 1/2?",["Jedną połowę","Jedną trzecią","Dwie połowy"],0],
+["Geometria","Geometria bada kształty i ich właściwości.","Kąt prosty ma 90 stopni.","Ile stopni ma kąt prosty?",["45°","90°","180°"],1]
+],
+informatics:[
+["Sprzęt i oprogramowanie","Sprzęt to fizyczne części komputera. Oprogramowanie to programy.","Sprzęt: procesor, monitor. Oprogramowanie: Windows.","Czym jest sprzęt?",["Fizyczne części komputera","Program","Internet"],0],
+["Algorytmy","Algorytm to dokładna sekwencja kroków rozwiązania zadania.","Przepis jest przykładem procedury.","Czym jest algorytm?",["Sekwencją kroków","Monitorem","Klawiaturą"],0]
+],
+slovak:[
+["Słowackie czasowniki","Czasowniki wyrażają czynność lub stan.","bežať = biegać, písať = pisać.","Które słowo jest słowackim czasownikiem?",["strom","rýchly","skákať"],2],
+["Słowackie rzeczowniki","Rzeczowniki nazywają osoby, zwierzęta i rzeczy.","pes = pies, dom = dom.","Które słowo jest rzeczownikiem?",["pekný","pes","bežať"],1]
+],
+english:[
+["Angielskie słówka","Poznaj popularne angielskie słowa.","dog = pies, cat = kot, house = dom.","Co oznacza DOG?",["Kot","Pies","Dom"],1],
+["Czasownik TO BE","Czasownik TO BE oznacza być.","I am. You are. He is.","Co oznacza I am?",["Ja jestem","Ty jesteś","On jest"],0]
+],
+czech:[
+["Czeskie słówka","Poznaj popularne czeskie słowa.","dům = dom, pes = pies.","Co oznacza DŮM?",["Dom","Pies","Drzewo"],0],
+["Czeska gramatyka","Język czeski używa liter ř, č, š i ž.","Przykłady: škola, řeka.","Która litera jest używana w czeskim?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Układ Słoneczny","Układ Słoneczny zawiera Słońce i obiekty krążące wokół niego.","Merkury, Wenus, Ziemia, Mars, Jowisz, Saturn, Uran, Neptun.","Która planeta jest najbliżej Słońca?",["Ziemia","Mars","Merkury"],2],
+["Ludzkie ciało","Ludzkie ciało składa się z wielu narządów.","Serce pompuje krew. Płuca pomagają oddychać.","Który organ pompuje krew?",["Serce","Żołądek","Płuca"],0]
+]
+},
+
+sl:{
+math:[
+["Seštevanje ➕","Seštevanje združuje dve ali več števil.","5 + 3 = 8","Koliko je 12 + 8?",["18","20","22"],1],
+["Odštevanje ➖","Odštevanje pomeni odvzemanje enega števila od drugega.","10 - 4 = 6","Koliko je 15 - 6?",["9","8","10"],0],
+["Množenje ✖️","Množenje je ponavljajoče se seštevanje.","4 × 3 = 12","Koliko je 7 × 8?",["54","56","64"],1],
+["Ulomki","Ulomek predstavlja del celote.","1/2 pomeni eno polovico.","Kaj pomeni 1/2?",["Eno polovico","Eno tretjino","Dve polovici"],0],
+["Geometrija","Geometrija proučuje oblike in njihove lastnosti.","Pravi kot meri 90 stopinj.","Koliko stopinj meri pravi kot?",["45°","90°","180°"],1]
+],
+informatics:[
+["Strojna in programska oprema","Strojna oprema so fizični deli računalnika. Programska oprema so programi.","Strojna oprema: procesor, zaslon. Programska oprema: Windows.","Kaj je strojna oprema?",["Fizični deli računalnika","Program","Internet"],0],
+["Algoritmi","Algoritem je natančno zaporedje korakov za rešitev naloge.","Recept je primer postopka.","Kaj je algoritem?",["Zaporedje korakov","Zaslon","Tipkovnica"],0]
+],
+slovak:[
+["Slovaški glagoli","Glagoli izražajo dejanje ali stanje.","bežať = teči, písať = pisati.","Katera beseda je slovaški glagol?",["strom","rýchly","skákať"],2],
+["Slovaški samostalniki","Samostalniki poimenujejo osebe, živali in stvari.","pes = pes, dom = hiša.","Katera beseda je samostalnik?",["pekný","pes","bežať"],1]
+],
+english:[
+["Angleške besede","Nauči se pogoste angleške besede.","dog = pes, cat = mačka, house = hiša.","Kaj pomeni DOG?",["Mačka","Pes","Hiša"],1],
+["Glagol TO BE","Glagol TO BE pomeni biti.","I am. You are. He is.","Kaj pomeni I am?",["Jaz sem","Ti si","On je"],0]
+],
+czech:[
+["Češke besede","Nauči se pogoste češke besede.","dům = hiša, pes = pes.","Kaj pomeni DŮM?",["Hiša","Pes","Drevo"],0],
+["Češka slovnica","Češčina uporablja črke ř, č, š in ž.","Primeri: škola, řeka.","Katera črka je značilna za češčino?",["Ř","Ł","Ñ"],0]
+],
+science:[
+["Osončje","Osončje vsebuje Sonce in telesa, ki krožijo okoli njega.","Merkur, Venera, Zemlja, Mars, Jupiter, Saturn, Uran, Neptun.","Kateri planet je najbližje Soncu?",["Zemlja","Mars","Merkur"],2],
+["Človeško telo","Človeško telo sestavlja veliko organov.","Srce črpa kri. Pljuča pomagajo pri dihanju.","Kateri organ črpa kri?",["Srce","Želodec","Pljuča"],0]
+]
+}
+
+};
+
+/* PREDMETY */
+
+const subjectIds=["math","informatics","slovak","english","czech","science"];
+const icons=["➗","💻","🇸🇰","🇬🇧","🇨🇿","🔬"];
+
+let selectedGrade="";
+let selectedSubject="";
+let currentLessons=[];
+let currentLang="sk";
+
+const gradeGrid=document.getElementById("gradeGrid");
+
+function renderGrades(){
+gradeGrid.innerHTML="";
+for(let i=1;i<=13;i++){
+let secondary=i>9;
+let number=secondary?i-9:i;
+let card=document.createElement("div");
+card.className="card";
+card.innerHTML=`<div class="icon">🎓</div><h3>${number}. ${T[currentLang].grades[secondary?1:0]}</h3><p>${secondary?"🏫 Stredná škola":"📚 Základná škola"}</p>`;
+card.onclick=()=>{
+selectedGrade=i;
+showSubjects();
+};
+gradeGrid.appendChild(card);
+}
+}
+
+function changeLanguage(){
+currentLang=document.getElementById("language").value;
+const t=T[currentLang];
+
+document.documentElement.lang=currentLang;
+document.getElementById("heroTitle").innerHTML=t.hero+' <span>Learn Now</span>';
+document.getElementById("heroDescription").textContent=t.description;
+document.getElementById("gradeTitle").textContent=t.grade;
+document.getElementById("gradeDescription").textContent=t.gradeDesc;
+document.getElementById("subjectTitle").textContent=t.subjects;
+document.getElementById("topicTitle").textContent=t.topics;
+document.getElementById("search").placeholder=t.search;
+document.getElementById("backText").textContent=t.back;
+document.getElementById("subjectBack").textContent=t.subjectBack;
+document.getElementById("topicBack").textContent=t.topicBack;
+
+renderGrades();
+
+if(!document.getElementById("subjectSection").classList.contains("hidden")){
+showSubjects();
+}
+}
+
+function showSubjects(){
+hideAll();
+document.getElementById("subjectSection").classList.remove("hidden");
+const grid=document.getElementById("subjectGrid");
+grid.innerHTML="";
+const t=T[currentLang];
+
+subjectIds.forEach((id,i)=>{
+const card=document.createElement("div");
+card.className="card";
+card.innerHTML=`<div class="icon">${icons[i]}</div><h3>${t.subjects[i]}</h3><p>${t.descriptions[i]}</p>`;
+card.onclick=()=>{
+selectedSubject=id;
+showTopics();
+};
+grid.appendChild(card);
+});
+}
+
+function showTopics(){
+hideAll();
+document.getElementById("topicSection").classList.remove("hidden");
+document.getElementById("search").value="";
+currentLessons=lessons[currentLang][selectedSubject]||[];
+const list=document.getElementById("topicList");
+list.innerHTML="";
+
+currentLessons.forEach((lesson,index)=>{
+const item=document.createElement("div");
+item.className="topic";
+item.textContent=lesson[0];
+item.onclick=()=>openLesson(index);
+list.appendChild(item);
+});
+}
+
+function searchTopics(){
+const query=document.getElementById("search").value.toLowerCase();
+document.querySelectorAll(".topic").forEach(item=>{
+item.style.display=item.textContent.toLowerCase().includes(query)?"block":"none";
+});
+}
+
+function openLesson(index){
+hideAll();
+document.getElementById("lessonSection").classList.remove("hidden");
+const l=currentLessons[index];
+const correct=l[6];
+
+document.getElementById("lessonContent").innerHTML=`
+<h2>${l[0]}</h2>
+<p>${l[1]}</p>
+<div class="example"><h3>📖 ${currentLang==="en"?"Example":currentLang==="de"?"Beispiel":currentLang==="fr"?"Exemple":currentLang==="es"?"Ejemplo":currentLang==="pl"?"Przykład":currentLang==="sl"?"Primer":"Príklad"}</h3>${l[2]}</div>
+<div class="quiz">
+<h3>🧠 ${currentLang==="en"?"Mini quiz":currentLang==="de"?"Mini-Test":currentLang==="fr"?"Mini-test":currentLang==="es"?"Mini prueba":currentLang==="pl"?"Mini test":currentLang==="sl"?"Mini test":"Mini test"}</h3>
+<p>${l[3]}</p>
+${l[4].map((answer,i)=>`<button onclick="checkAnswer(this,${i},${correct})">${answer}</button>`).join("")}
+<div class="result"></div>
+</div>`;
+}
+
+function checkAnswer(button,selected,correct){
+const quiz=button.parentElement;
+if(quiz.dataset.answered==="true")return;
+quiz.dataset.answered="true";
+const result=quiz.querySelector(".result");
+
+if(selected===correct){
+result.textContent=currentLang==="en"?"✅ Correct!":currentLang==="de"?"✅ Richtig!":currentLang==="fr"?"✅ Correct !":currentLang==="es"?"✅ ¡Correcto!":currentLang==="pl"?"✅ Dobrze!":currentLang==="sl"?"✅ Pravilno!":"✅ Správne! Výborne!";
+result.style.color="#55dd99";
+}else{
+result.textContent=currentLang==="en"?"❌ Try again next time!":currentLang==="de"?"❌ Versuche es noch einmal!":currentLang==="fr"?"❌ Essaie encore !":currentLang==="es"?"❌ ¡Inténtalo de nuevo!":currentLang==="pl"?"❌ Spróbuj ponownie!":currentLang==="sl"?"❌ Poskusi znova!":"❌ Skús si učivo zopakovať.";
+result.style.color="#ff7777";
+}
+}
+
+function hideAll(){
+["gradeSection","subjectSection","topicSection","lessonSection"].forEach(id=>{
+document.getElementById(id).classList.add("hidden");
+});
+}
+
+function goBack(){
+hideAll();
+document.getElementById("gradeSection").classList.remove("hidden");
+}
+
+renderGrades();
+changeLanguage();
+
+</script>
+</body>
+</html>
+```
